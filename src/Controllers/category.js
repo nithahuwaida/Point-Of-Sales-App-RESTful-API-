@@ -5,43 +5,113 @@ module.exports = {
 		categoryModel
 		.getCategories()
 		.then((response)=>{
-			form.success(res, 200, response)
+			form.formCategory(res, 200, response)
 		})
 		.catch((err)=>{
 			res.json(err)
 		});
 	},
-	postCategories:(req, res)=>{
+	getCategory:(req, res)=>{
+		const id = req.params.id
 		categoryModel
-		.postCategories(req)
-		.then((response)=>res.send({
-	        status: 200,
-	        message: "created category successfully!",
-	    }))
+		.getCategory(id)
+		.then((response)=>{
+			//Checking if category does not exict
+			if(response[0]=== undefined){
+				return res.status(400).send({
+					status :400,
+					id,
+					message : 'The category does not exist'
+				})
+			}
+			res.json({
+				status: 200,
+				id: id,
+				message: 'Category successfully retrieved',
+				response
+			});
+		})
 		.catch((err)=>{
-			res.json(err)
+			console.log(err)
 		});
 	},
-	updateCategories:(req, res)=>{
+	postCategory:(req, res)=>{
+		const data = {
+			category : req.body.name_category
+		}
+		
 		categoryModel
-		.updateCategories(req)
-		.then((response)=>res.send({
-	        status: 200,
-	        message: "Update category Successfully!",
+		.postCategory(data)
+		// .then((response)=>res.send({
+	 //        status: 200,
+		// 	message: "Category has successfully added!",
+		// 	data
+	 //    }))
+	 .then((response)=>res.send({
+			data
 	    }))
 		.catch((err)=>{
-			res.json(err)
+			if(res.status(200)){
+				return res.send({
+					message : "Category failed to be added"
+				})
+			}else{
+				console.log(err)
+			}
 		});
 	},
-	deleteCategories:(req, res)=>{
-		categoryModel
-		.deleteCategories(req)
-		.then((response)=>res.send({
-	        status: 200,
-	        message: "Delete category successfully!",
-	    }))
-		.catch((err)=>{
-			res.json(err)
-		});
+	updateCategory:(req, res)=>{
+		const data ={
+			id_category : req.params.id,
+			name_category : req.body.category,
+		}
+		const id= req.params.id
+		categoryModel.getCategory(id)
+		.then(response => {
+			if(response.length !==0){
+				return categoryModel.updateCategory(data,id)
+				// .then(response =>res.json({
+				// 	status: 200,
+				// 	message: "Category has successfully updated!",
+				// 	id,
+				// 	data
+				// }))
+				.then(response =>res.send({
+					data
+				}))
+				.catch(err => console.log(err)) 
+			}else{
+				return res.status(400).send({
+					status: 400,
+					id,
+					message: "Category does not exist",
+				})
+			}
+		})
+	},
+	deleteCategory:(req, res)=>{
+		const id= req.params.id
+
+		categoryModel.getCategory(id)
+		.then(response =>{
+			if(response.length!==0){
+				console.log(response.length)
+				return categoryModel.deleteCategory(id)
+					.then((response)=>res.send({
+					status: 200,
+					id,
+					message: "Category has been deleted!",
+				}))
+				.catch((err)=>{
+					res.json(err)
+				})
+			}else{
+				return res.status(400).send({
+					status :400,
+					id,
+					message: 'Category does not exist'
+				})
+			}
+		})
 	},
 };

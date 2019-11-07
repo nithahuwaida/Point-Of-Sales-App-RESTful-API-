@@ -3,16 +3,15 @@ const productController = require('../Controllers/product');
 const Router = express.Router();
 
 
+//Product CRUD
 Router.get('/', productController.getProducts);
-Router.post('/', productController.postProducts);
-Router.get('/sort', productController.sortProducts);
-Router.get('/page', productController.pageProducts);
-Router.get('/search', productController.searchProducts);
-Router.get('/:keyId', productController.getProductsId);
-// Router.patch('/:keyId', productController.updateProducts);
-Router.put('/:keyId', productController.updateProducts);
-Router.delete('/:keyId', productController.deleteProducts);
-Router.put('/qty/add/:keyId', productController.addQty);
-Router.put('/qty/reduce/:keyId', productController.reduceQty);
+Router.get('/:id', productController.getProduct);
+Router.post('/', productController.postProduct);
+Router.patch('/:id', productController.updateProduct);
+Router.delete('/:id', productController.deleteProduct);
+
+//Product add Quantity 
+Router.put('/qty/:id', productController.postQty);
+// Router.put('/qty/reduce/:id', productController.reduceQty);
 
 module.exports = Router;

@@ -35,12 +35,12 @@ module.exports = {
 			};
 		});
 	},
-	count : (result)=>{
-		return result.map(item=>{
-			return {
-				count: item.count,
-			};
-		});
-	},
+	// count : (result)=>{
+	// 	return result.map(item=>{
+	// 		return {
+	// 			count: item.count,
+	// 		};
+	// 	});
+	// },
 
 };

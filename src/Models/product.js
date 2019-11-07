@@ -1,43 +1,41 @@
 const connection = require('../Configs/connect');
 module.exports= {
-	getProducts: () =>{
+	getProducts: (queryLimit, sort, order, querySearch) =>{
 		return new Promise((resolve, reject)=>{
-			connection.query(
-				`SELECT * FROM products JOIN categories ON categories.id_category=products.id_category`,
+			sql = 'SELECT * FROM products JOIN categories ON categories.id_category=products.id_category';
+			connection.query(`${sql} ${querySearch} ORDER BY ${sort} ${order} ${queryLimit}`,
 				(err, response) =>{
 				if(!err){
 					resolve(response);
 				} else{
-					reject('Data not found!',err);
+					reject(err);
 				}
 			});
 		});
 	},
-	getProductsId: req =>{
+	getProduct: (id) =>{
 		return new Promise((resolve, reject)=>{
-			let keyId= req.params.keyId;
-			connection.query(
-				`SELECT * FROM products WHERE id_product = ?`,
-				[keyId],
+			const sql = `SELECT * FROM products WHERE id_product = ?`;
+
+			connection.query( sql, [id],
 				(err, response) =>{
 				if(!err){
 					resolve(response);
 				}else{
-					reject('Data not found!',err);
+					reject(err);
 				}
-			});
-		});
+			})
+		})
 	},
-	postProducts: req =>{
+	postProduct: data =>{
 		return new Promise((resolve, reject)=>{
-			let body= req.body;
-			if(req.body.name_product!= null && req.body.desc_product!= null && req.body.image_product!= null && req.body.id_category!= null){
-				if(req.body.price_product!= null && req.body.price_product!=0 && req.body.price_product >0){
-					if(req.body.quantity_product!= null && req.body.quantity_product!=0 && req.body.quantity_product >0){
+			console.log(data)
+			const sql = `INSERT INTO products SET ?`;
 
-						connection.query(
-							'INSERT INTO products SET name_product=?, desc_product=?, image_product=?, id_category=?, price_product=?, quantity_product=?',
-							[body.name_product, body.desc_product, body.image_product, body.id_category, body.price_product, body.quantity_product],
+			if(data.name_product!= null && data.desc_product!= null && data.image_product!= null && data.id_category!= null){
+				if(data.price_product!= null && data.price_product!=0 && data.price_product >0){
+					if(data.quantity_product!= null && data.quantity_product!=0 && data.quantity_product >0){
+						connection.query(sql, data,
 							(err, response) =>{
 							if(!err){
 								resolve(response);
@@ -46,45 +44,20 @@ module.exports= {
 							}
 						});
 					}else{
-					reject("Cannot added product!")
+					reject(err)
 				}
 				}else{
-					reject("Cannot added product!")
+					reject(err)
 				}
 			}else{
-					reject("Cannot added product!")
+					reject(err)
 				}
 		});
 	},
-	updateProducts: (req, value1) =>{
+	updateProduct: (data,id) =>{
 		return new Promise((resolve, reject)=>{
-			let db=value1[0];
-			let keyId=req.params.keyId;
-
-			let name_product= req.body.name_product ? req.body.name_product : db.name;
-			let desc_product= req.body.desc_product ? req.body.desc_product : db.description;
-			let image_product= req.body.image_product ? req.body.image_product : db.imageURL;
-			let id_category= req.body.id_category ? req.body.id_category : db.id_category;
-			let price_product= req.body.price_product ? req.body.price_product : db.price;
-			let quantity_product= req.body.quantity_product ? req.body.quantity_product : db.quantity;
-
-			connection.query(
-				`UPDATE products SET name_product=?, desc_product=?, image_product=?, id_category=?, price_product=?, quantity_product=? WHERE id_product = ?`,
-				[name_product, desc_product, image_product, id_category, price_product, quantity_product, keyId],
-				(err, response) =>{
-				if(!err){
-					resolve(response);
-				} else{
-					reject('Cannot Updated Products!',err);
-				}
-			});
-		});
-	},
-	deleteProducts: req =>{
-		return new Promise((resolve, reject)=>{
-			let keyId= req.params.keyId;
-			connection.query(
-				`DELETE FROM products WHERE id_product = "${keyId}"`,
+			const sql = `UPDATE products SET ? WHERE id_product = ?`;
+			connection.query(sql ,[data, id],
 				(err, response) =>{
 				if(!err){
 					resolve(response);
@@ -94,13 +67,10 @@ module.exports= {
 			});
 		});
 	},
-
-	searchProducts: req =>{
+	deleteProduct: id =>{
 		return new Promise((resolve, reject)=>{
-			let name= req.name;
-			console.log(name)
-			connection.query(
-				`SELECT id_product, name_product,desc_product, image_product, name_category, price_product, quantity_product FROM products JOIN categories ON categories.id_category=products.id_category WHERE name_product LIKE "%${name}%"`,
+			const sql = `DELETE FROM products WHERE id_product = ?`;
+			connection.query(sql,[id],
 				(err, response) =>{
 				if(!err){
 					resolve(response);
@@ -110,38 +80,22 @@ module.exports= {
 			});
 		});
 	},
-	sortProducts: (req) => {
+	postQty: (data,id) =>{
 		return new Promise((resolve, reject)=>{
-			let sortBy= req.sortBy;
-			let orderBy= req.orderBy;
-			connection.query(
-				`SELECT * FROM products JOIN categories ON categories.id_category=products.id_category Order By ${sortBy} ${orderBy}`,
-				(err, response) =>{
-				if(!err){
-					resolve(response);
-				} else{
-					reject(`Sorting by name, category and date`,err);
-				}
-			});
-		});
-	},
-	addQty: (req) =>{
-		return new Promise((resolve, reject)=>{
-			let keyId=req.params.keyId;
-			let addQty= req.body;
-			if(addQty.quantity_product!=null && addQty.quantity_product!=0 && addQty.quantity_product>0){
-				connection.query(
-					`UPDATE products SET quantity_product= quantity_product + "${addQty.quantity_product}" WHERE id_product = "${keyId}"`,
+			console.log(data.quantity_product,id)
+		
+			if(data.quantity_product!=null && data.quantity_product!=0 && data.quantity_product>0){
+				connection.query(`UPDATE products SET quantity_product= quantity_product + ${data.quantity_product} WHERE id_product = ${id}`,
 					(err, response) =>{
 					if(!err){
 						resolve(response);
 					} else{
-						reject("Cannot add quantity product",err);
+						reject(err);
 					}
 				});
 			}
 			else{
-				reject("Cannot add quantity product");
+				reject(err);
 			}
 		});
 	},
@@ -184,28 +138,4 @@ module.exports= {
 			});
 		});
 	},
-	pageProducts: (req, value1) =>{
-		return new Promise((resolve, reject)=>{
-			let count = value1[0];
-			let page  = req.page;
-			let limit = req.limit;
-			let offset= ((page-1)*limit);
-			console.log(count.count)
-
-			if(offset<=count.count){
-				connection.query(
-					`SELECT * FROM products LIMIT ${limit} OFFSET ${offset}`,
-					(err, response) =>{
-					if(!err){
-						resolve(response);
-					} else{
-						reject('Data not found!',err);
-					}
-				});
-			}else{
-				reject('Data not found!');
-			}
-		});
-	},
-
 };
