@@ -8,7 +8,7 @@
     "dev" : "concurrently \"npm run start\" \"npm --prefix ../posapp-week2 run start\""
   },
   "engines":{
-    "node" :"10.16.3",
+    "node" :"10.16.3"
   },
   "author": "Nitha Huwaida",
   "license": "ISC",
